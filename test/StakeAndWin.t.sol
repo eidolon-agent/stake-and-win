@@ -19,11 +19,31 @@ contract StakeAndWinTest is Test {
     }
 
     function testThresholdTriggersWinner() public {
-        // Buy THRESHOLD tickets
         for (uint256 i = 0; i < 100; i++) {
             vm.prank(address(this));
             sw.buyTicket{value: 0.01 ether}();
         }
-        assertNe(sw.currentWinner(), address(0));
+        assertTrue(sw.currentWinner() != address(0));
+    }
+
+    function testClaimPrizeResetsRound() public {
+        address alice = vm.addr(0x1000);
+        vm.deal(alice, 3 ether); // fund alice with enough ETH for tickets and gas
+
+        for (uint256 i = 0; i < 100; i++) {
+            vm.prank(alice);
+            sw.buyTicket{value: 0.01 ether}();
+        }
+
+        assertEq(sw.currentWinner(), alice);
+
+        // Winner claims
+        vm.prank(alice);
+        sw.claimPrize();
+
+        // After claim, round should reset
+        assertEq(sw.totalTickets(), 0);
+        assertEq(sw.currentWinner(), address(0));
+        assertEq(sw.prizeClaimed(), false);
     }
 }

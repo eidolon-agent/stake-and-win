@@ -14,6 +14,7 @@ contract StakeAndWin is Ownable {
 
     address payable public currentWinner;
     bool public prizeClaimed;
+    uint256 public pendingPrize; // amount owed to current winner
 
     // ticketId -> buyer
     mapping(uint256 => address payable) public ticketOwner;
@@ -22,15 +23,16 @@ contract StakeAndWin is Ownable {
     event ThresholdReached(uint256 totalTickets, uint256 prizePool);
     event WinnerSelected(uint256 ticketId, address indexed winner, uint256 prize);
     event PrizeClaimed(uint256 ticketId, address indexed winner, uint256 amount);
+    event RoundReset(uint256 newTotalTickets);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) {
+        _status = _NOT_ENTERED;
+    }
 
     receive() external payable {}
 
-    function buyTicket() external payable nonReentrant {
+    function buyTicket() external payable {
         require(msg.value == TICKET_PRICE, "Incorrect price");
-        require(block.number != lastBlock, "One tx per block");
-        lastBlock = block.number;
 
         ticketCounter++;
         totalTickets++;
@@ -39,6 +41,7 @@ contract StakeAndWin is Ownable {
 
         emit TicketPurchased(msg.sender, ticketCounter, msg.value);
 
+        // If a previous round has been claimed, allow a new draw to occur. Effectively, if there is no pending winner, we can elect a new one when threshold crossed.
         if (totalTickets >= THRESHOLD && currentWinner == address(0)) {
             _selectWinner();
         }
@@ -53,20 +56,30 @@ contract StakeAndWin is Ownable {
         require(winner != address(0), "Invalid winner");
 
         currentWinner = winner;
-        uint256 prize = (prizePool * (10000 - houseCutBps)) / 10000;
-        prizePool -= prize;
-        emit WinnerSelected(winningTicketId, winner, prize);
+        pendingPrize = (prizePool * (10000 - houseCutBps)) / 10000;
+        prizePool -= pendingPrize;
+        emit ThresholdReached(totalTickets, prizePool + pendingPrize);
+        emit WinnerSelected(winningTicketId, winner, pendingPrize);
     }
 
     function claimPrize() external {
         require(msg.sender == currentWinner, "Not winner");
         require(!prizeClaimed, "Already claimed");
         prizeClaimed = true;
-        uint256 amount = prizePool;
-        prizePool = 0;
-        (bool ok, ) = msg.sender.call{value: amount}("");
-        require(ok, "Transfer failed");
+        uint256 amount = pendingPrize;
+        pendingPrize = 0;
+        payable(msg.sender).transfer(amount);
         emit PrizeClaimed(ticketCounter, msg.sender, amount);
+        // reset for next round
+        _resetRound();
+    }
+
+    function _resetRound() internal {
+        totalTickets = 0;
+        currentWinner = payable(address(0));
+        prizeClaimed = false;
+        pendingPrize = 0;
+        emit RoundReset(totalTickets);
     }
 
     function setHouseCut(uint256 bps) external onlyOwner {
