@@ -5,13 +5,26 @@ A micro‑lottery on Base Sepolia. Users buy 0.01 ETH tickets. When 100 ticket
 ## Contract
 
 - `StakeAndWin.sol` — main lottery logic
-- Reentrancy‑protected on `buyTicket`, `buyMultiple`, and `claimPrize`
-- Random winner selection using blockhash + timestamp
+- Reentrancy‑protected (`nonReentrant`) on `buyTicket`, `buyMultiple`, and `claimPrize`
+- Commit‑reveal inspired randomness: per‑round salt updated at each winner selection, combined with blockhash and timestamp
 - `buyTicket()` and `buyMultiple(count)` pay 0.01 ETH per ticket
 - When `totalTickets >= THRESHOLD` (100), winner is selected automatically
 - Winner calls `claimPrize()` to receive 90% of pool; round auto‑resets
-- Owner can set fee (`houseCutBps`), emergency withdraw, and `forceResetRound` if needed
-- View `ticketsRemaining()` shows how many tickets left until next draw
+- Owner can set fee (`houseCutBps`), pause/unpause, emergency withdraw, and `forceResetRound` after 1000 blocks (rolls over unclaimed prizes)
+- View `ticketsRemaining()` and `blocksUntilDraw()` (estimate)
+- Events: `TicketPurchased`, `BatchPurchased`, `ThresholdReached`, `WinnerSelected`, `PrizeClaimed`, `RoundReset`, `SaltUpdated`, `Paused`, `Unpaused`
+
+## Frontend
+
+- Static dashboard in `frontend/index.html`
+- Connect wallet (MetaMask) and auto‑switch to Base Sepolia
+- Shows: tickets sold, tickets to next draw, prize pool (ETH), current winner, house fee percentage
+- Single‑ticket and batch‑ticket purchase
+- Winner claim card (if you are the winner)
+- Auto‑refresh every 30 s
+- Paused banner
+
+Deploy to Vercel with root=`frontend`. After deployment, update `CONTRACT_ADDRESS` in the file.
 
 ## Frontend
 
@@ -38,8 +51,8 @@ forge script script/DeployStakeAndWin.s.sol:DeployStakeAndWin \
 After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeploy frontend.
 
 **Deployed on Base Sepolia:**
-- Contract: `0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6`
-- Basescan: https://sepolia.basescan.org/address/0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6
+- Contract: `0x1d14aF931b5C98dc4938DD940898E715330D6fa9`
+- Basescan (verify pending): https://sepolia.basescan.org/address/0x1d14aF931b5C98dc4938DD940898E715330D6fa9
 
 **Frontend:** Deploy to Vercel with root=`frontend`. Then share URL.
 
