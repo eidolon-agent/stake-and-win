@@ -3,31 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stake & Win</title>
+  <title>Stake & Win — Micro Lottery</title>
   <style>
-    :root { --bg:#0a0a0a; --card:#111; --text:#e5e5e5; --muted:#a3a3a3; --primary:#3b82f6; --primaryHover:#2563eb; --border:#333; }
-    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; }
-    .container { max-width:1200px; margin:0 auto; padding:0 20px; } section { padding:80px 0; border-bottom:1px solid var(--border); }
-    h1 { font-size:2.5rem; margin:0 0 16px; } h2 { font-size:2rem; margin:0 0 16px; } h3 { font-size:1.25rem; margin:0 0 8px; }
-    .lead { font-size:1.125rem; color:var(--muted); max-width:700px; margin-bottom:24px; }
-    .badge { display:inline-block; padding:4px 12px; background:#1e3a5f; color:#93c5fd; border-radius:999px; font-size:.875rem; margin-right:8px; margin-bottom:8px; }
-    .badge.primary { background:var(--primary); color:white; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; padding:12px 24px; border-radius:8px; font-weight:600; text-decoration:none; cursor:pointer; border:none; transition:background .2s; font-size:1rem; }
-    .btn.primary { background:var(--primary); color:white; } .btn.primary:hover { background:var(--primaryHover); }
-    .btn.secondary { background:#1f2937; color:#e5e5e5; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:24px; }
-    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:24px 0; }
-    .stat { background:#111; border:1px solid #333; border-radius:8px; padding:16px; text-align:center; }
-    .stat-value { font-size:1.5rem; font-weight:700; color:var(--primary); } .stat-label { color:var(--muted); font-size:.875rem; }
-    input, button { padding:10px; margin:4px 0; border-radius:6px; border:1px solid var(--border); background:#1a1a1a; color:var(--text); width:100%; }
-    .error { color:#f87171; background:#1a1a1a; padding:12px; border-radius:8px; margin:12px 0; }
-    #loading { color:var(--muted); font-style:italic; }
+    :root {
+      --bg:#0b0f1a;
+      --card:#111827;
+      --card-glass:rgba(17,24,39,0.7);
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --primary:#3b82f6;
+      --primaryHover:#2563eb;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --border:#1f2937;
+      --radius:16px;
+      --shadow:0 10px 40px rgba(0,0,0,0.4);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      line-height:1.6;
+      min-height:100vh;
+      background-image:
+        radial-gradient(1200px at 10% 10%, rgba(59,130,246,0.08), transparent),
+        radial-gradient(1200px at 90% 90%, rgba(16,185,129,0.08), transparent);
+    }
+    .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+    header { padding:24px 0; border-bottom:1px solid var(--border); backdrop-filter:blur(2px); position:sticky; top:0; z-index:10; }
+    .nav-row { display:flex; justify-content:space-between; align-items:center; }
+    h1 { font-size:2rem; margin:0; letter-spacing:-0.02em; }
+    h1 span { color:var(--primary); }
+    .subtitle { color:var(--muted); font-size:1.125rem; }
+    .badge { display:inline-flex; align-items:center; padding:6px 12px; border-radius:999px; font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+    .badge.live { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+    .badge.testnet { background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.25); }
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:32px 0; }
+    .stat-card { background:var(--card-glass); border:1px solid var(--border); border-radius:var(--radius); padding:20px; backdrop-filter:blur(4px); box-shadow:var(--shadow); text-align:center; }
+    .stat-value { font-size:2rem; font-weight:800; letter-spacing:-0.02em; background:linear-gradient(90deg,var(--primary),#8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-label { color:var(--muted); font-size:.875rem; margin-top:4px; }
+    .card { background:var(--card-glass); border:1px solid var(--border); border-radius:var(--radius); padding:24px; backdrop-filter:blur(4px); box-shadow:var(--shadow); }
+    .card h3 { margin-top:0; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:14px 24px; border-radius:12px; font-weight:600; text-decoration:none; cursor:pointer; border:none; transition:all 0.2s; font-size:1rem; }
+    .btn.primary { background:linear-gradient(90deg,var(--primary),#6366f1); color:white; box-shadow:0 4px 15px rgba(59,130,246,0.3); }
+    .btn.primary:hover { transform:translateY(-1px); box-shadow:0 8px 25px rgba(59,130,246,0.45); }
+    .btn.secondary { background:#1f2937; color:var(--text); border:1px solid var(--border); }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+    .pulse { animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{ opacity:1; } 50%{ opacity:.7; } 100%{ opacity:1; } }
+    .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading { opacity:0.7; pointer-events:none; }
+    .error { color:var(--danger); background:rgba(239,68,68,0.1); padding:12px; border-radius:8px; margin:12px 0; border:1px solid rgba(239,68,68,0.25); }
+    .success { color:var(--success); background:rgba(16,185,129,0.1); padding:12px; border-radius:8px; margin:12px 0; border:1px solid rgba(16,185,129,0.25); }
+    form { display:flex; gap:12px; align-items:flex-end; }
+    input, select { padding:12px; border-radius:10px; border:1px solid var(--border); background:#1f2937; color:var(--text); width:100%; font-size:1rem; }
+    input:focus, select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(59,130,246,0.25); }
+    .progress-track { height:12px; background:#1f2937; border-radius:6px; overflow:hidden; margin:16px 0; box-shadow:inset 0 2px 4px rgba(0,0,0,0.3); }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--primary),#8b5cf6); width:0%; transition:width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .countdown { font-size:1.5rem; font-weight:700; color:var(--warning); }
+    .winning-ticket { background:conic-gradient(from 180deg at 50% 50%, rgba(59,130,246,0.15), rgba(139,92,246,0.15), rgba(16,185,129,0.15)); border:1px solid rgba(255,255,255,0.1); animation:pulse 2s infinite; }
+    footer { text-align:center; padding:40px 0; color:var(--muted); font-size:.875rem; }
+    footer a { color:var(--primary); text-decoration:none; }
+    footer a:hover { text-decoration:underline; }
+    .hero { text-align:center; padding:60px 0 40px; }
+    .hero h1 { font-size:2.5rem; margin-bottom:8px; }
+    .hero p { color:var(--muted); font-size:1.125rem; max-width:700px; margin:0 auto; }
+    @media (max-width:768px) {
+      .stats { grid-template-columns:repeat(2,1fr); }
+      .hero h1 { font-size:1.8rem; }
+      .stat-value { font-size:1.5rem; }
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <div class="container" style="padding:40px 0;">
-      <div class="card"><h3>Loading…</h3><p id="loading">Initializing…</p></div>
+    <div class="container" style="padding:80px 0;">
+      <div class="card" style="text-align:center;padding:40px;">
+        <div class="spinner" style="margin:0 auto 16px;"></div>
+        <p>Loading contract data…</p>
+      </div>
     </div>
   </div>
 
@@ -35,13 +93,19 @@
     const CONTRACT_ADDRESS = '0x1d14aF931b5C98dc4938DD940898E715330D6fa9';
     const RPC_URL = 'https://sepolia.base.org';
     const BASE_SEPOLIA_CHAIN_ID = '0x14a34';
+    const THRESHOLD = 100;
+    const BET_PRICE_ETH = 0.01;
+    const BET_PRICE_WEI = BigInt(0.01 * 1e18);
 
-    function rpcCall(method, params=[]) {
-      return fetch(RPC_URL, {
+    async function rpcCall(method, params=[]) {
+      const res = await fetch(RPC_URL, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({jsonrpc:'2.0',id:1,method,params})
-      }).then(r=>r.json()).then(r=>{ if(r.error) throw new Error(r.error.message); return r.result; });
+      });
+      const json = await res.json();
+      if(json.error) throw new Error(json.error.message);
+      return json.result;
     }
 
     async function getWalletAddress() {
@@ -50,357 +114,273 @@
       return accs[0];
     }
 
-    // Simple hex pad
-    function hexPad(str, width) {
-      if(!str.startsWith('0x')) str='0x'+str;
-      const needed = width*2 - (str.length-2);
-      return needed>0 ? '0x'+'0'.repeat(needed)+str.slice(2) : str;
-    }
-
-    // Encode function call (manual, minimal)
-    function encodeCall(sig, argsHex) {
-      const selector = '0x' + keccak256(sig).toString(16).slice(0,8);
-      return selector + argsHex.replace(/^0x/,'');
-    }
-
-    async function keccak256(str) {
-      const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-      const bytes = new Uint8Array(hash);
-      let hex='0x'; for(let i=0;i<bytes.length;i++) hex += bytes[i].toString(16).padStart(2,'0');
-      return hex;
+    function weiToEth(wei){ return (Number(wei)/1e18).toFixed(4); }
+    function formatUSD(eth, price){ return '$'+(eth*price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function formatDuration(sec){
+      if(sec<=0) return 'Any block now';
+      const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), s=Math.floor(sec%60);
+      return h>0 ? `${h}h ${m}m` : `${m}m ${s}s`;
     }
 
     class App {
       constructor() {
-        this.account=null;
-        this.wrongNetwork=false;
-        this.currentChainId=null;
-        this.totalTickets=0;
-        this.prizePool=0n;
-        this.currentWinner='0x0000000000000000000000000000000000000000';
-        this.ticketsRemaining=100;
-        this.prizeClaimed=false;
-        this.houseCutBps=1000;
-        this.paused=false;
-        this.loadError=null;
-        this.pendingTx=false; // button loading state
-        this.txStatus=''; // pending, success, error
-        this.ethPriceUsd=3000; // placeholder, will fetch
+        this.account = null;
+        this.wrongNetwork = false;
+        this.data = { ticketsSold:0, prizePool:0n, winner:'0x0000000000000000000000000000000000000000', ticketsRemaining:100, prizeClaimed:false, houseCutBps:1000, paused:false, countdown:0 };
+        this.pending = false;
+        this.txStatus = null;
+        this.txError = null;
+        this.ethPriceUsd = 3000;
+        this.animatedTickets = 0;
+        this.animatedPool = 0n;
       }
       async init() {
         try {
-          document.getElementById('loading').textContent = 'Connecting wallet…';
-          // Timeout for wallet connection
-          const walletPromise = getWalletAddress();
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Wallet connection timeout')), 10000));
-          this.account = await Promise.race([walletPromise, timeoutPromise]);
-          document.getElementById('loading').textContent = 'Checking network…';
-          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-          this.currentChainId = chainId;
+          this.account = await getWalletAddress();
+          const chainId = await window.ethereum.request({method:'eth_chainId'});
           this.wrongNetwork = (chainId !== BASE_SEPOLIA_CHAIN_ID);
-          document.getElementById('loading').textContent = this.wrongNetwork ? 'Wrong network' : 'Loading data…';
-          if (!this.wrongNetwork) {
-            try {
-              await this.loadState();
-            } catch (e) {
-              this.loadError = 'Failed to load contract state: ' + e.message;
-            }
-          }
+          if(!this.wrongNetwork) await this.loadState();
           this.render();
-          // Auto-refresh every 30s
-          setInterval(() => {
-            if (!this.wrongNetwork) {
-              this.loadState().catch(e => { this.loadError = 'Refresh failed: ' + e.message; this.render(); });
-            }
-          }, 30000);
-        } catch (err) {
-          this.renderError('Initialization failed: ' + err.message);
-        }
+          setInterval(() => { if(!this.wrongNetwork) this.loadState().catch(()=>{}); }, 15000);
+        } catch(err) { this.renderError(err.message); }
       }
       async loadState() {
-        const data1 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x18160ddd'},'latest']); // totalTickets()
-        this.totalTickets = Number('0x'+data1);
-        const data2 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x47d50a9b'},'latest']); // prizePool()
-        this.prizePool = BigInt('0x'+data2);
-        const data3 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x82e1c462'},'latest']); // currentWinner()
-        this.currentWinner = '0x'+data3.slice(-40);
         try {
-          const data4 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x73656c65'},'latest']); // ticketsRemaining()
-          this.ticketsRemaining = Number('0x'+data4);
-        } catch (e) { this.ticketsRemaining = 100 - this.totalTickets; if (this.ticketsRemaining < 0) this.ticketsRemaining = 0; }
-        // prizeClaimed?
+          const [tickets, pool, winner, claimed, house] = await Promise.all([
+            rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x18160ddd'},'latest']),
+            rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x47d50a9b'},'latest']),
+            rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x82e1c462'},'latest']),
+            rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x8b30c06a'},'latest']),
+            rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x540165a9'},'latest'])
+          ]);
+          const newTickets = Number('0x'+tickets);
+          const newPool = BigInt('0x'+pool);
+          this.data.ticketsSold = newTickets;
+          this.data.prizePool = newPool;
+          this.data.winner = '0x'+winner.slice(-40);
+          this.data.prizeClaimed = (claimed==='0x0000000000000000000000000000000000000000000000000000000000000001');
+          this.data.houseCutBps = Number('0x'+house)/1e4;
+          this.data.ticketsRemaining = THRESHOLD - newTickets;
+          if(this.data.ticketsRemaining<0) this.data.ticketsRemaining = 0;
+          this.data.countdown = this.data.ticketsRemaining * 12;
+          await this.fetchEthPrice();
+          this.animateCounters(newTickets, newPool);
+        } catch(e) { throw e; }
+      }
+      animateCounters(targetTickets, targetPool) {
+        const startTickets = this.animatedTickets;
+        const startPool = this.animatedPool;
+        const duration = 800;
+        const start = performance.now();
+        const step = (now) => {
+          const p = Math.min((now - start)/duration, 1);
+          this.animatedTickets = Math.floor(startTickets + (targetTickets - startTickets)*p);
+          this.animatedPool = startPool + (targetPool - startPool)*BigInt(p);
+          if(p<1) requestAnimationFrame(step);
+          else this.render();
+        };
+        requestAnimationFrame(step);
+      }
+      async fetchEthPrice() {
         try {
-          const data5 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x8b30c06a'},'latest']); // prizeClaimed()
-          this.prizeClaimed = (data5==='0x0000000000000000000000000000000000000000000000000000000000000001');
-        } catch (e) { this.prizeClaimed = false; }
+          const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+          const data = await res.json();
+          this.ethPriceUsd = data.ethereum?.usd || 3000;
+        } catch(e) { this.ethPriceUsd = 3000; }
       }
       async switchNetwork() {
         try {
           await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:BASE_SEPOLIA_CHAIN_ID}]});
-          this.wrongNetwork=false; await this.loadState(); this.render();
-        }catch(err){ this.renderError('Switch failed: '+err.message); }
+          this.wrongNetwork = false; await this.loadState(); this.render();
+        } catch(err) { this.renderError('Switch failed: '+err.message); }
+      }
+      async simulateTx(to, data, value) {
+        const params = [{from:this.account,to,data,value:'0x'+value.toString(16)}];
+        await rpcCall('eth_call', params);
       }
       async buyTicket(e) {
         e.preventDefault();
-        // Simulate first
-        try {
-          const simData = '0xa6c2edf6'; // buyTicket()
-          await this.simulateTx(CONTRACT_ADDRESS, simData, 0.01 ether);
-        } catch (err) {
-          alert('Simulation failed: ' + err.message);
-          return;
-        }
-        this.pendingTx = true; this.txStatus = 'pending'; this.render();
+        try { await this.simulateTx(CONTRACT_ADDRESS, '0xa6c2edf6', BET_PRICE_WEI); }
+        catch(err){ alert('Simulation failed: '+err.message); return; }
+        this.pending = true; this.txStatus = 'pending'; this.render();
         try {
           const tx = await window.ethereum.request({
             method:'eth_sendTransaction',
-            params:[{
-              to: CONTRACT_ADDRESS,
-              value: '0x'+(0.01 ether).toString(16),
-              data: '0xa6c2edf6'
-            }]
+            params:[{to:CONTRACT_ADDRESS,value:'0x'+(BET_PRICE_WEI).toString(16),data:'0xa6c2edf6'}]
           });
           this.txStatus = 'success';
           await this.loadState();
         } catch(err) {
-          this.txStatus = 'error';
-          this.txError = err.message;
-        } finally {
-          this.pendingTx = false;
-          this.render();
-        }
+          this.txStatus = 'error'; this.txError = err.message;
+        } finally { this.pending = false; this.render(); }
       }
-
       async buyMultiple(e) {
         e.preventDefault();
         const count = parseInt(e.target.count.value);
-        // Simulate first
-        const value = BigInt(0.01 ether) * BigInt(count);
+        if(count<1||count>100){ alert('Quantity must be between 1 and 100'); return; }
+        const value = BET_PRICE_WEI * BigInt(count);
         try {
-          // encode count as uint256 (right-padded 32 bytes)
-          const countHex = BigInt(count).toString(16).padStart(64, '0');
-          const simData = '0x8b73ac4e' + countHex;
-          await this.simulateTx(CONTRACT_ADDRESS, simData, value);
-        } catch (err) {
-          alert('Simulation failed: ' + err.message);
-          return;
-        }
-        this.pendingTx = true; this.txStatus = 'pending'; this.render();
+          const data = '0x8b73ac4e'+BigInt(count).toString(16).padStart(64,'0');
+          await this.simulateTx(CONTRACT_ADDRESS, data, value);
+        } catch(err){ alert('Simulation failed: '+err.message); return; }
+        this.pending = true; this.txStatus = 'pending'; this.render();
         try {
           const tx = await window.ethereum.request({
             method:'eth_sendTransaction',
-            params:[{
-              to: CONTRACT_ADDRESS,
-              value: '0x'+value.toString(16),
-              data: '0x8b73ac4e' + BigInt(count).toString(16).padStart(64, '0')
-            }]
+            params:[{to:CONTRACT_ADDRESS,value:'0x'+value.toString(16),data:'0x8b73ac4e'+BigInt(count).toString(16).padStart(64,'0')}]
           });
           this.txStatus = 'success';
           await this.loadState();
         } catch(err) {
-          this.txStatus = 'error';
-          this.txError = err.message;
-        } finally {
-          this.pendingTx = false;
-          this.render();
-        }
+          this.txStatus = 'error'; this.txError = err.message;
+        } finally { this.pending = false; this.render(); }
       }
-
       async claimPrize(e) {
         e.preventDefault();
-        // Simulate first
-        try {
-          await this.simulateTx(CONTRACT_ADDRESS, '0x3ccfb174', 0n);
-        } catch (err) {
-          alert('Simulation failed: ' + err.message);
-          return;
-        }
-        this.pendingTx = true; this.txStatus = 'pending'; this.render();
+        try { await this.simulateTx(CONTRACT_ADDRESS, '0x3ccfb174', 0n); }
+        catch(err){ alert('Simulation failed: '+err.message); return; }
+        this.pending = true; this.txStatus = 'pending'; this.render();
         try {
           const tx = await window.ethereum.request({
             method:'eth_sendTransaction',
-            params:[{
-              to: CONTRACT_ADDRESS,
-              data: '0x3ccfb174' // claimPrize()
-            }]
+            params:[{to:CONTRACT_ADDRESS,data:'0x3ccfb174'}]
           });
           this.txStatus = 'success';
           await this.loadState();
         } catch(err) {
-          this.txStatus = 'error';
-          this.txError = err.message;
-        } finally {
-          this.pendingTx = false;
-          this.render();
-        }
+          this.txStatus = 'error'; this.txError = err.message;
+        } finally { this.pending = false; this.render(); }
       }
-
-      async claimPrize(e) {
-        e.preventDefault();
-        try {
-          const tx = await window.ethereum.request({
-            method:'eth_sendTransaction',
-            params:[{
-              to: CONTRACT_ADDRESS,
-              data: '0x3ccfb174' // claimPrize()
-            }]
-          });
-          alert('Tx: '+tx);
-          await this.loadState();
-        } catch(err){ alert('Error: '+err.message); }
-      }
-      renderError(msg){ 
+      renderError(msg) {
         document.getElementById('app').innerHTML = `
-          <div class="container" style="padding:40px 0;">
-            <div class="card" style="max-width:400px;margin:0 auto;">
-              <h3>Error</h3>
-              <div class="error">${msg}</div>
-              <button class="btn primary" onclick="app.reconnect()">Retry Connection</button>
+          <div class="container" style="padding:80px 0;">
+            <div class="card" style="max-width:500px;margin:0 auto;text-align:center;">
+              <h3 style="color:var(--danger)">Error</h3>
+              <p style="color:var(--muted)">${msg}</p>
+              <button class="btn primary" onclick="app.init()" style="margin-top:16px;">Retry</button>
             </div>
-          </div>
-        `; 
+          </div>`;
       }
       render() {
-        const account=this.account||'Not connected';
-        document.getElementById('app').innerHTML=`
+        const d = this.data;
+        const poolEth = weiToEth(this.animatedPool);
+        const progress = Math.min(100, (this.animatedTickets/THRESHOLD)*100);
+        const isWinner = d.winner && d.winner!=='0x0000000000000000000000000000000000000000' && this.account && this.account.toLowerCase()===d.winner.toLowerCase() && !d.prizeClaimed;
+
+        document.getElementById('app').innerHTML = `
           <div>
-            <header style="padding:20px 0;border-bottom:1px solid var(--border);">
-              <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+            <header>
+              <div class="container nav-row">
                 <div>
-                  <h1 style="font-size:1.5rem;margin:0;">Stake & Win</h1>
-                  <p style="color:var(--muted);margin:0;">Micro-lottery on Base Sepolia</p>
+                  <h1>Stake <span>&</span> Win</h1>
+                  <p class="subtitle">Micro‑lottery on Base Sepolia</p>
                 </div>
-                <nav>
-                  <button class="btn secondary" onclick="app.init()">Refresh</button>
-                  ${this.account?`<button class="btn secondary" onclick="app.disconnect()">Disconnect</button>`:''}
+                <nav style="display:flex;gap:8px;align-items:center;">
+                  <span class="badge testnet">Base Sepolia</span>
+                  ${this.account ? `<button class="btn secondary" onclick="app.init()">Refresh</button>`+`<button class="btn secondary" onclick="app.disconnect()">Disconnect</button>` : ''}
                 </nav>
               </div>
             </header>
 
-            ${this.wrongNetwork?`
+            ${this.wrongNetwork ? `
             <div class="container" style="padding:20px 0;">
-              <div class="card" style="border-color:#f87171;">
-                <h3 style="color:#f87171;">Wrong Network</h3>
-                <p>Switch to Base Sepolia to play.</p>
+              <div class="card" style="border-color:var(--danger);text-align:center;">
+                <h3 style="color:var(--danger)">Wrong Network</h3>
+                <p style="color:var(--muted)">Switch to Base Sepolia to play.</p>
                 <button class="btn primary" onclick="app.switchNetwork()">Switch to Base Sepolia</button>
               </div>
-            </div>`:''}
+            </div>` : ''}
 
-            ${this.loadError ? `
-            <div class="container" style="padding:10px 0;">
-              <div class="card" style="border-color:#f87171;">
-                <p style="color:#f87171;margin:0;">${this.loadError}</p>
-                <button class="btn secondary" style="margin-top:8px;" onclick="app.loadState().then(()=>app.render()).catch(e=>{app.loadError='Retry failed: '+e.message;app.render();})">Retry</button>
-              </div>
-            </div>
-            ` : ''}
-
-            ${this.paused ? `
-            <div class="container" style="padding:10px 0;">
-              <div class="card" style="border-color:#fbbf24;background:#1c1c1c;">
-                <p style="margin:0;color:#fbbf24;font-weight:600;">⏸ Contract is paused by owner. Actions disabled.</p>
-              </div>
-            </div>
-            ` : ''}
-
-            <section class="container">
-              <span class="badge primary">Live on Base Sepolia</span>
-              <h1>Stake & Win</h1>
-              <p class="lead">Buy a 0.01 ETH ticket. When 100 tickets are sold, a winner is drawn automatically. House takes <strong>${(this.houseCutBps/100).toFixed(1)}%</strong>, winner gets the rest.</p>
-              <p>Connected: ${account.slice(0,6)}...${account.slice(-4)}</p>
-
+            <main class="container" style="padding:40px 0;">
               <div class="stats">
-                <div class="stat"><div class="stat-value">${this.totalTickets}</div><div class="stat-label">Tickets Sold</div></div>
-                <div class="stat"><div class="stat-value">${this.ticketsRemaining}</div><div class="stat-label">Tickets to Next Draw</div></div>
-                <div class="stat"><div class="stat-value">${(Number(this.prizePool)/1e18).toFixed(2)}</div><div class="stat-label">Prize Pool (ETH)</div></div>
-                <div class="stat"><div class="stat-value">${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000'?this.currentWinner.slice(0,6)+'...':'—'}</div><div class="stat-label">Current Winner</div></div>
+                <div class="stat-card">
+                  <div class="stat-value">${this.animatedTickets}</div>
+                  <div class="stat-label">Tickets Sold</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">${d.ticketsRemaining}</div>
+                  <div class="stat-label">Tickets to Draw</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">${poolEth}</div>
+                  <div class="stat-label">Prize Pool (ETH)</div>
+                  <div class="note" style="margin-top:4px;font-size:.75rem;color:var(--muted);">≈ ${formatUSD(parseFloat(poolEth), this.ethPriceUsd)}</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" style="font-size:1.5rem;padding-top:8px;">${d.countdown>0?formatDuration(d.countdown):'Any block now'}</div>
+                  <div class="stat-label">Est. Time to Draw</div>
+                </div>
               </div>
 
-              <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-top:24px;">
+              <div class="card" style="margin-bottom:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-weight:600;">Progress to next draw</span>
+                  <span style="color:var(--muted);font-size:.875rem;">${progress.toFixed(1)}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
+                <p style="color:var(--muted);font-size:.875rem;margin:0;">${THRESHOLD - this.animatedTickets} tickets needed to trigger the draw</p>
+              </div>
+
+              <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;">
                 <div class="card">
-                  <h3>Buy Single Ticket</h3>
-                  <button class="btn primary" onclick="app.buyTicket(event)" style="font-size:1.25rem;padding:16px 32px;" ${this.pendingTx?'disabled':''}>Buy 1 Ticket (0.01 ETH)</button>
+                  <h3 style="margin-top:0;">Buy Single Ticket</h3>
+                  <p style="color:var(--muted);font-size:.875rem;">One ticket costs 0.01 ETH. If you hold the winning ticket when the threshold is reached, you take home 90% of the pool (house takes 10%).</p>
+                  <button class="btn primary" style="width:100%;margin-top:16px;font-size:1.125rem;padding:16px;" onclick="app.buyTicket(event)" ${this.pending?'disabled':''}>
+                    ${this.pending&&this.txStatus==='pending'?'<span class="spinner"></span>Processing…':'Buy 1 Ticket (0.01 ETH)'}
+                  </button>
                 </div>
                 <div class="card">
-                  <h3>Buy Multiple</h3>
+                  <h3 style="margin-top:0;">Buy Multiple</h3>
                   <form onsubmit="app.buyMultiple(event)" style="display:flex; gap:12px; align-items:flex-end;">
                     <div style="flex:1;">
                       <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.875rem;">Quantity (1-100)</label>
-                      <input name="count" type="number" min="1" max="100" value="1" required style="margin:0;width:100%;" ${this.pendingTx?'disabled':''} />
+                      <input name="count" type="number" min="1" max="100" value="1" required style="margin:0;width:100%;" ${this.pending?'disabled':''} />
                     </div>
-                    <button class="btn primary" type="submit" style="margin:0;" ${this.pendingTx?'disabled':''}>Buy</button>
+                    <button class="btn primary" type="submit" ${this.pending?'disabled':''}>Buy</button>
                   </form>
                 </div>
               </div>
 
-              ${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000' && this.account && this.account.toLowerCase()===this.currentWinner.toLowerCase() && !this.prizeClaimed ? `
-              <div class="card" style="border-color:#fbbf24;margin-top:24px;">
-                <h3>🎉 You Won!</h3>
-                <p>Claim your prize now.</p>
-                <button class="btn primary" onclick="app.claimPrize(event)">Claim Prize</button>
-              </div>
-              ` : ''}
+              ${isWinner ? `
+              <div class="card winning-ticket" style="margin-top:24px;text-align:center;border-width:2px;">
+                <h3 style="color:var(--warning);margin:0 0 8px;">🎉 You Won!</h3>
+                <p style="color:var(--muted);margin-bottom:16px;">Congratulations! Claim your prize now.</p>
+                <button class="btn primary" style="font-size:1.125rem;padding:14px 28px;" onclick="app.claimPrize(event)" ${this.pending?'disabled':''}>
+                  ${this.pending&&this.txStatus==='pending'?'<span class="spinner"></span>Processing…':'Claim Prize'}
+                </button>
+              </div>` : ''}
 
-              <button class="btn primary" onclick="app.buyTicket(event)" style="font-size:1.25rem;padding:16px 32px;">Buy Ticket (0.01 ETH)</button>
-              <p style="color:var(--muted);font-size:.875rem;margin-top:8px;">One ticket per transaction. Threshold: 100 tickets.</p>
-            </section>
+              ${this.txStatus==='error'? `<div class="error" style="margin-top:24px;">Transaction failed: ${this.txError}</div>` : ''}
+              ${this.txStatus==='success'? `<div class="success" style="margin-top:24px;">Transaction confirmed!</div>` : ''}
+            </main>
 
             <footer>
               <div class="container">
-                <p>Built by <a href="https://github.com/eidolon-agent" target="_blank">Eidolon</a>.</p>
-                <div class="links" style="justify-content:center;">
-                  <a href="https://github.com/eidolon-agent/stake-and-win" target="_blank">GitHub</a>
-                </div>
-                <p style="margin-top:24px;opacity:0.6;">MIT License</p>
+                <p>Built by <a href="https://github.com/eidolon-agent" target="_blank">Eidolon</a>. MIT License.</p>
+                <p style="opacity:0.6;margin-top:8px;">Contract: <code style="background:#1f2937;padding:2px 6px;border-radius:4px;">${CONTRACT_ADDRESS}</code></p>
               </div>
             </footer>
           </div>
         `;
       }
       disconnect(){ this.account=null; this.renderNoWallet(); }
-      async reconnect(){ 
+      renderNoWallet(){
         document.getElementById('app').innerHTML = `
-          <div class="container" style="padding:40px 0;">
-            <div class="card" style="max-width:400px;margin:0 auto;">
-              <h3>Reconnecting…</h3>
-              <p id="loading">Please confirm wallet connection.</p>
-            </div>
-          </div>
-        `;
-        setTimeout(async () => {
-          try {
-            await this.init();
-          } catch (err) {
-            this.renderError('Reconnect failed: ' + err.message);
-          }
-        }, 500);
-      }
-      renderNoWallet(){ 
-        document.getElementById('app').innerHTML = `
-          <div class="container" style="padding:40px 0;">
-            <div class="card" style="max-width:400px;margin:0 auto;">
+          <div class="container" style="padding:80px 0;">
+            <div class="card" style="max-width:400px;margin:0 auto;text-align:center;">
               <h3>Connect Wallet</h3>
-              <div class="error">No wallet detected. Install MetaMask or refresh after installing.</div>
-              <a href="https://metamask.io/" target="_blank" class="btn primary">Install MetaMask</a>
-              <button class="btn secondary" onclick="app.init()" style="margin-top:12px;">Retry</button>
+              <p style="color:var(--muted)">Install MetaMask or another wallet and refresh.</p>
+              <a href="https://metamask.io/" target="_blank" class="btn primary" style="margin-top:16px;">Get MetaMask</a>
+              <button class="btn secondary" onclick="app.init()" style="margin-top:8px;">Retry</button>
             </div>
-          </div>
-        `; 
+          </div>`;
       }
     }
 
-    const app=new App(); window.app=app;
-    (async()=>{ 
-      if(typeof window.ethereum==='undefined'){ 
-        app.renderNoWallet(); 
-      } else { 
-        try{ 
-          await app.init(); 
-        } catch(err){ 
-          console.error('startup error:', err);
-          app.renderError('Startup failed: ' + err.message); 
-        } 
-      } 
+    const app = new App(); window.app=app;
+    (async()=>{
+      if(!window.ethereum){ app.renderNoWallet(); return; }
+      try { await app.init(); } catch(err){ console.error(err); app.renderError('Startup failed: '+err.message); }
     })();
   </script>
 </body>
