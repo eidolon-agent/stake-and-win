@@ -36,6 +36,10 @@ forge script script/DeployStakeAndWin.s.sol:DeployStakeAndWin \
 
 After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeploy frontend.
 
+**Deployed on Base Sepolia:**
+- Contract: `0x9B70f827D2741542E032B5bBD3b7393E4bB890B6`
+- Basescan: https://sepolia.basescan.org/address/0x9B70f827D2741542E032B5bBD3b7393E4bB890B6
+
 ## Revenue
 
 - 10% of each pool goes to the contract owner (can withdraw any time).
