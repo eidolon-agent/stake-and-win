@@ -32,7 +32,7 @@
   </div>
 
   <script>
-    const CONTRACT_ADDRESS = '0x751fB7dB3B1B0E8609904BC4B1E444b94d57E0D2';
+    const CONTRACT_ADDRESS = '0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6';
     const RPC_URL = 'https://sepolia.base.org';
     const BASE_SEPOLIA_CHAIN_ID = '0x14a34';
 
@@ -79,6 +79,7 @@
         this.prizePool=0n;
         this.currentWinner='0x0000000000000000000000000000000000000000';
         this.ticketsRemaining=100;
+        this.prizeClaimed=false;
       }
       async init() {
         try {
@@ -98,11 +99,15 @@
         this.prizePool = BigInt('0x'+data2);
         const data3 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x82e1c462'},'latest']); // currentWinner()
         this.currentWinner = '0x'+data3.slice(-40);
-        // ticketsRemaining() — custom selector we added
         try {
-          const data4 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x73656c65'},'latest']); // 'ticketsRemaining' keccak
+          const data4 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x73656c65'},'latest']); // ticketsRemaining()
           this.ticketsRemaining = Number('0x'+data4);
         } catch (e) { this.ticketsRemaining = 100 - this.totalTickets; if (this.ticketsRemaining < 0) this.ticketsRemaining = 0; }
+        // prizeClaimed?
+        try {
+          const data5 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x8b30c06a'},'latest']); // prizeClaimed()
+          this.prizeClaimed = (data5==='0x0000000000000000000000000000000000000000000000000000000000000001');
+        } catch (e) { this.prizeClaimed = false; }
       }
       async switchNetwork() {
         try {
@@ -119,6 +124,21 @@
               to: CONTRACT_ADDRESS,
               value: '0x'+(0.01 ether).toString(16),
               data: '0xa6c2edf6' // buyTicket()
+            }]
+          });
+          alert('Tx: '+tx);
+          await this.loadState();
+        } catch(err){ alert('Error: '+err.message); }
+      }
+
+      async claimPrize(e) {
+        e.preventDefault();
+        try {
+          const tx = await window.ethereum.request({
+            method:'eth_sendTransaction',
+            params:[{
+              to: CONTRACT_ADDRESS,
+              data: '0x3ccfb174' // claimPrize()
             }]
           });
           alert('Tx: '+tx);
@@ -164,6 +184,14 @@
                 <div class="stat"><div class="stat-value">${(Number(this.prizePool)/1e18).toFixed(2)}</div><div class="stat-label">Prize Pool (ETH)</div></div>
                 <div class="stat"><div class="stat-value">${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000'?this.currentWinner.slice(0,6)+'...':'—'}</div><div class="stat-label">Current Winner</div></div>
               </div>
+
+              ${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000' && this.account && this.account.toLowerCase()===this.currentWinner.toLowerCase() && !this.prizeClaimed ? `
+              <div class="card" style="border-color:#fbbf24;">
+                <h3>🎉 You Won!</h3>
+                <p>Claim your prize now.</p>
+                <button class="btn primary" onclick="app.claimPrize(event)">Claim Prize</button>
+              </div>
+              ` : ''}
 
               <button class="btn primary" onclick="app.buyTicket(event)" style="font-size:1.25rem;padding:16px 32px;">Buy Ticket (0.01 ETH)</button>
               <p style="color:var(--muted);font-size:.875rem;margin-top:8px;">One ticket per transaction. Threshold: 100 tickets.</p>
