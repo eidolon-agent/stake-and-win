@@ -44,7 +44,7 @@ After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeplo
 - Contract: `0x1d14aF931b5C98dc4938DD940898E715330D6fa9`
 - Verified on Basescan: https://sepolia.basescan.org/address/0x1d14aF931b5C98dc4938DD940898E715330D6fa9
 
-**Live frontend:** https://frontend-ijzn2nq8s-nikayrezzas-projects.vercel.app
+**Live frontend:** https://frontend-83kdirovt-nikayrezzas-projects.vercel.app
 
 **Notes:**
 - House fee: 10% (configurable by owner)
