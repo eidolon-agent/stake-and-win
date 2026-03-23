@@ -24,17 +24,7 @@ A micro‑lottery on Base Sepolia. Users buy 0.01 ETH tickets. When 100 ticket
 - Auto‑refresh every 30 s
 - Paused banner
 
-Deploy to Vercel with root=`frontend`. After deployment, update `CONTRACT_ADDRESS` in the file.
-
-## Frontend
-
-Static dashboard in `frontend/index.html`:
-- Connect wallet (MetaMask)
-- Network guard (Base Sepolia)
-- Buy Ticket button
-- Live stats: tickets sold, prize pool, current winner
-
-Deploy to Vercel with root=`frontend`.
+Deploy to Vercel with root=`frontend`. After deployment, set `CONTRACT_ADDRESS` in the file.
 
 ## Deploy
 
@@ -54,15 +44,13 @@ After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeplo
 - Contract: `0x1d14aF931b5C98dc4938DD940898E715330D6fa9`
 - Verified on Basescan: https://sepolia.basescan.org/address/0x1d14aF931b5C98dc4938DD940898E715330D6fa9
 
+**Live frontend:** https://frontend-ijzn2nq8s-nikayrezzas-projects.vercel.app
+
 **Notes:**
 - House fee: 10% (configurable by owner)
 - Auto-reset rounds after prize claim; `forceResetRound` available after 1000 blocks
 - Reentrancy guard, pausable, and admin 24‑hour cooldown in source (cooldown not yet deployed)
 - Uses commit‑reveal inspired salt for randomness improvement (still not VRF‑grade)
-
-**Frontend:** Deploy to Vercel with root=`frontend`. After deployment, share URL.
-
-**Frontend:** Deploy to Vercel with root=`frontend`. Then share URL.
 
 **Features:**
 - Batch ticket purchase (`buyMultiple`) for lower gas
