@@ -311,7 +311,18 @@
           }
         }, 500);
       }
-      renderNoWallet(){ document.getElementById('app').innerHTML=`<div class="container" style="padding:40px 0;"><div class="card" style="max-width:400px;margin:0 auto;"><h3>Connect Wallet</h3><div class="error">No wallet detected. Install MetaMask or refresh after installing.</div><a href="https://metamask.io/" target="_blank" class="btn primary">Install MetaMask</a></div></div>`; }
+      renderNoWallet(){ 
+        document.getElementById('app').innerHTML = `
+          <div class="container" style="padding:40px 0;">
+            <div class="card" style="max-width:400px;margin:0 auto;">
+              <h3>Connect Wallet</h3>
+              <div class="error">No wallet detected. Install MetaMask or refresh after installing.</div>
+              <a href="https://metamask.io/" target="_blank" class="btn primary">Install MetaMask</a>
+              <button class="btn secondary" onclick="app.init()" style="margin-top:12px;">Retry</button>
+            </div>
+          </div>
+        `; 
+      }
     }
 
     const app=new App(); window.app=app;
