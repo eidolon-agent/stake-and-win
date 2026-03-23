@@ -32,7 +32,7 @@
   </div>
 
   <script>
-    const CONTRACT_ADDRESS = '0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6';
+    const CONTRACT_ADDRESS = '0x1d14aF931b5C98dc4938DD940898E715330D6fa9';
     const RPC_URL = 'https://sepolia.base.org';
     const BASE_SEPOLIA_CHAIN_ID = '0x14a34';
 
@@ -80,6 +80,8 @@
         this.currentWinner='0x0000000000000000000000000000000000000000';
         this.ticketsRemaining=100;
         this.prizeClaimed=false;
+        this.houseCutBps=1000; // default 10%
+        this.paused=false;
       }
       async init() {
         try {
@@ -131,6 +133,24 @@
         } catch(err){ alert('Error: '+err.message); }
       }
 
+      async buyMultiple(e) {
+        e.preventDefault();
+        const count = parseInt(e.target.count.value);
+        try {
+          const value = BigInt(0.01 ether) * BigInt(count);
+          const tx = await window.ethereum.request({
+            method:'eth_sendTransaction',
+            params:[{
+              to: CONTRACT_ADDRESS,
+              value: '0x'+value.toString(16),
+              data: '0x8b73ac4e' // buyMultiple(uint256) keccak selector
+            }]
+          });
+          alert('Tx: '+tx);
+          await this.loadState();
+        } catch(err){ alert('Error: '+err.message); }
+      }
+
       async claimPrize(e) {
         e.preventDefault();
         try {
@@ -172,10 +192,18 @@
               </div>
             </div>`:''}
 
+            ${this.paused ? `
+            <div class="container" style="padding:10px 0;">
+              <div class="card" style="border-color:#fbbf24;background:#1c1c1c;">
+                <p style="margin:0;color:#fbbf24;font-weight:600;">⏸ Contract is paused by owner. Actions disabled.</p>
+              </div>
+            </div>
+            ` : ''}
+
             <section class="container">
               <span class="badge primary">Live on Base Sepolia</span>
               <h1>Stake & Win</h1>
-              <p class="lead">Buy a 0.01 ETH ticket. When 100 tickets are sold, a winner is drawn automatically. House takes 10%, winner gets 90%.</p>
+              <p class="lead">Buy a 0.01 ETH ticket. When 100 tickets are sold, a winner is drawn automatically. House takes <strong>${(this.houseCutBps/100).toFixed(1)}%</strong>, winner gets the rest.</p>
               <p>Connected: ${account.slice(0,6)}...${account.slice(-4)}</p>
 
               <div class="stats">
@@ -185,8 +213,25 @@
                 <div class="stat"><div class="stat-value">${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000'?this.currentWinner.slice(0,6)+'...':'—'}</div><div class="stat-label">Current Winner</div></div>
               </div>
 
+              <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-top:24px;">
+                <div class="card">
+                  <h3>Buy Single Ticket</h3>
+                  <button class="btn primary" onclick="app.buyTicket(event)" style="font-size:1.25rem;padding:16px 32px;">Buy 1 Ticket (0.01 ETH)</button>
+                </div>
+                <div class="card">
+                  <h3>Buy Multiple</h3>
+                  <form onsubmit="app.buyMultiple(event)" style="display:flex; gap:12px; align-items:flex-end;">
+                    <div style="flex:1;">
+                      <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.875rem;">Quantity (1-100)</label>
+                      <input name="count" type="number" min="1" max="100" value="1" required style="margin:0;width:100%;" />
+                    </div>
+                    <button class="btn primary" type="submit" style="margin:0;">Buy</button>
+                  </form>
+                </div>
+              </div>
+
               ${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000' && this.account && this.account.toLowerCase()===this.currentWinner.toLowerCase() && !this.prizeClaimed ? `
-              <div class="card" style="border-color:#fbbf24;">
+              <div class="card" style="border-color:#fbbf24;margin-top:24px;">
                 <h3>🎉 You Won!</h3>
                 <p>Claim your prize now.</p>
                 <button class="btn primary" onclick="app.claimPrize(event)">Claim Prize</button>
