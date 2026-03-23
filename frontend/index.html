@@ -185,7 +185,17 @@
           await this.loadState();
         } catch(err){ alert('Error: '+err.message); }
       }
-      renderError(msg){ document.getElementById('app').innerHTML=`<div class="container"><div class="error">${msg}</div></div>`; }
+      renderError(msg){ 
+        document.getElementById('app').innerHTML = `
+          <div class="container" style="padding:40px 0;">
+            <div class="card" style="max-width:400px;margin:0 auto;">
+              <h3>Error</h3>
+              <div class="error">${msg}</div>
+              <button class="btn primary" onclick="app.reconnect()">Retry Connection</button>
+            </div>
+          </div>
+        `; 
+      }
       render() {
         const account=this.account||'Not connected';
         document.getElementById('app').innerHTML=`
@@ -284,11 +294,39 @@
         `;
       }
       disconnect(){ this.account=null; this.renderNoWallet(); }
-      renderNoWallet(){ document.getElementById('app').innerHTML=`<div class="container" style="padding:40px 0;"><div class="card" style="max-width:400px;margin:0 auto;"><h3>Connect Wallet</h3><div class="error">No wallet</div><a href="https://metamask.io/" target="_blank" class="btn primary">Install MetaMask</a></div></div>`; }
+      async reconnect(){ 
+        document.getElementById('app').innerHTML = `
+          <div class="container" style="padding:40px 0;">
+            <div class="card" style="max-width:400px;margin:0 auto;">
+              <h3>Reconnecting…</h3>
+              <p id="loading">Please confirm wallet connection.</p>
+            </div>
+          </div>
+        `;
+        setTimeout(async () => {
+          try {
+            await this.init();
+          } catch (err) {
+            this.renderError('Reconnect failed: ' + err.message);
+          }
+        }, 500);
+      }
+      renderNoWallet(){ document.getElementById('app').innerHTML=`<div class="container" style="padding:40px 0;"><div class="card" style="max-width:400px;margin:0 auto;"><h3>Connect Wallet</h3><div class="error">No wallet detected. Install MetaMask or refresh after installing.</div><a href="https://metamask.io/" target="_blank" class="btn primary">Install MetaMask</a></div></div>`; }
     }
 
     const app=new App(); window.app=app;
-    (async()=>{ if(typeof window.ethereum==='undefined'){ app.renderNoWallet(); }else{ try{ await app.init(); }catch(err){ app.renderError('Init failed: '+err.message); } } })();
+    (async()=>{ 
+      if(typeof window.ethereum==='undefined'){ 
+        app.renderNoWallet(); 
+      } else { 
+        try{ 
+          await app.init(); 
+        } catch(err){ 
+          console.error('startup error:', err);
+          app.renderError('Startup failed: ' + err.message); 
+        } 
+      } 
+    })();
   </script>
 </body>
 </html>
