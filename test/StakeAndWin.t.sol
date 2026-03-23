@@ -52,31 +52,59 @@ contract StakeAndWinTest is Test {
         assertEq(sw.prizeClaimed(), false);
     }
 
-    function testForceResetRound() public {
+    function testForceResetRoundAfterTimeout() public {
         address alice = vm.addr(0x1000);
         vm.deal(alice, 3 ether);
         for (uint256 i = 0; i < 100; i++) {
             vm.prank(alice);
             sw.buyTicket{value: 0.01 ether}();
         }
-        // winner selected but not claimed yet
         assertTrue(sw.currentWinner() != address(0));
         assertFalse(sw.prizeClaimed());
 
-        // cannot force reset before claim
+        // Fast forward 1000 blocks
+        vm.warp(block.number + 1000);
         vm.prank(owner());
         sw.forceResetRound();
 
-        // After force reset, state cleared
         assertEq(sw.currentWinner(), address(0));
-        assertEq(sw.prizeClaimed(), false);
+        assertEq(sw.totalTickets(), 0);
     }
 
-    function testTicketsRemaining() public {
+    function testPausable() public {
+        vm.prank(owner());
+        sw.pause();
+        vm.prank(address(this));
+        vm.expectRevert("Paused");
+        sw.buyTicket{value: 0.01 ether}();
+        vm.prank(owner());
+        sw.unpause();
+        vm.prank(address(this));
+        sw.buyTicket{value: 0.01 ether}();
+    }
+
+    function testBlocksUntilDraw() public {
         for (uint256 i = 0; i < 50; i++) {
             vm.prank(address(this));
             sw.buyTicket{value: 0.01 ether}();
         }
-        assertEq(sw.ticketsRemaining(), 50);
+        assertEq(sw.blocksUntilDraw(), 50);
+    }
+
+    function testSaltUpdatedOnWinnerSelect() public {
+        for (uint256 i = 0; i < 100; i++) {
+            vm.prank(address(this));
+            sw.buyTicket{value: 0.01 ether}();
+        }
+        uint256 salt1 = sw.salt();
+        // Reset round and draw again
+        vm.prank(owner());
+        sw.forceResetRound();
+        for (uint256 i = 0; i < 100; i++) {
+            vm.prank(address(this));
+            sw.buyTicket{value: 0.01 ether}();
+        }
+        uint256 salt2 = sw.salt();
+        assertNe(salt1, salt2);
     }
 }

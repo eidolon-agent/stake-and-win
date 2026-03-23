@@ -52,7 +52,15 @@ After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeplo
 
 **Deployed on Base Sepolia:**
 - Contract: `0x1d14aF931b5C98dc4938DD940898E715330D6fa9`
-- Basescan (verify pending): https://sepolia.basescan.org/address/0x1d14aF931b5C98dc4938DD940898E715330D6fa9
+- Verified on Basescan: https://sepolia.basescan.org/address/0x1d14aF931b5C98dc4938DD940898E715330D6fa9
+
+**Notes:**
+- House fee: 10% (configurable by owner)
+- Auto-reset rounds after prize claim; `forceResetRound` available after 1000 blocks
+- Reentrancy guard, pausable, and admin 24‑hour cooldown in source (cooldown not yet deployed)
+- Uses commit‑reveal inspired salt for randomness improvement (still not VRF‑grade)
+
+**Frontend:** Deploy to Vercel with root=`frontend`. After deployment, share URL.
 
 **Frontend:** Deploy to Vercel with root=`frontend`. Then share URL.
 
