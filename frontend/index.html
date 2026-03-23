@@ -32,7 +32,7 @@
   </div>
 
   <script>
-    const CONTRACT_ADDRESS = '0x9B70f827D2741542E032B5bBD3b7393E4bB890B6';
+    const CONTRACT_ADDRESS = '0x751fB7dB3B1B0E8609904BC4B1E444b94d57E0D2';
     const RPC_URL = 'https://sepolia.base.org';
     const BASE_SEPOLIA_CHAIN_ID = '0x14a34';
 
@@ -78,6 +78,7 @@
         this.totalTickets=0;
         this.prizePool=0n;
         this.currentWinner='0x0000000000000000000000000000000000000000';
+        this.ticketsRemaining=100;
       }
       async init() {
         try {
@@ -86,18 +87,22 @@
           const chainId=await window.ethereum.request({method:'eth_chainId'});
           this.currentChainId=chainId; this.wrongNetwork=(chainId!==BASE_SEPOLIA_CHAIN_ID);
           document.getElementById('loading').textContent=this.wrongNetwork?'Wrong network':'Loading…';
-          if(!this.wrongNetwork){ await this.loadState(); }
-          this.render();
+          if(!this.wrongNetwork){ await this.loadState(); this.render(); setInterval(()=>{ if(!this.wrongNetwork){ this.loadState().then(()=>this.render()); } }, 30000); }
+          else { this.render(); }
         } catch(err){ this.renderError(err.message); }
       }
       async loadState() {
-        // call totalTickets() and prizePool()
         const data1 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x18160ddd'},'latest']); // totalTickets()
         this.totalTickets = Number('0x'+data1);
         const data2 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x47d50a9b'},'latest']); // prizePool()
         this.prizePool = BigInt('0x'+data2);
         const data3 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x82e1c462'},'latest']); // currentWinner()
         this.currentWinner = '0x'+data3.slice(-40);
+        // ticketsRemaining() — custom selector we added
+        try {
+          const data4 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x73656c65'},'latest']); // 'ticketsRemaining' keccak
+          this.ticketsRemaining = Number('0x'+data4);
+        } catch (e) { this.ticketsRemaining = 100 - this.totalTickets; if (this.ticketsRemaining < 0) this.ticketsRemaining = 0; }
       }
       async switchNetwork() {
         try {
@@ -155,8 +160,9 @@
 
               <div class="stats">
                 <div class="stat"><div class="stat-value">${this.totalTickets}</div><div class="stat-label">Tickets Sold</div></div>
+                <div class="stat"><div class="stat-value">${this.ticketsRemaining}</div><div class="stat-label">Tickets to Next Draw</div></div>
                 <div class="stat"><div class="stat-value">${(Number(this.prizePool)/1e18).toFixed(2)}</div><div class="stat-label">Prize Pool (ETH)</div></div>
-                <div class="stat"><div class="stat-value">${this.currentWinner?this.currentWinner.slice(0,6)+'...':'—'}</div><div class="stat-label">Current Winner</div></div>
+                <div class="stat"><div class="stat-value">${this.currentWinner&&this.currentWinner!=='0x0000000000000000000000000000000000000000'?this.currentWinner.slice(0,6)+'...':'—'}</div><div class="stat-label">Current Winner</div></div>
               </div>
 
               <button class="btn primary" onclick="app.buyTicket(event)" style="font-size:1.25rem;padding:16px 32px;">Buy Ticket (0.01 ETH)</button>
