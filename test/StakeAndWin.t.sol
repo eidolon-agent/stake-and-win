@@ -18,6 +18,13 @@ contract StakeAndWinTest is Test {
         assertEq(sw.prizePool(), 0.01 ether);
     }
 
+    function testBuyMultiple() public {
+        vm.prank(address(this));
+        sw.buyMultiple{value: 0.05 ether}(5);
+        assertEq(sw.totalTickets(), 5);
+        assertEq(sw.prizePool(), 0.05 ether);
+    }
+
     function testThresholdTriggersWinner() public {
         for (uint256 i = 0; i < 100; i++) {
             vm.prank(address(this));
@@ -28,7 +35,7 @@ contract StakeAndWinTest is Test {
 
     function testClaimPrizeResetsRound() public {
         address alice = vm.addr(0x1000);
-        vm.deal(alice, 3 ether); // fund alice with enough ETH for tickets and gas
+        vm.deal(alice, 3 ether);
 
         for (uint256 i = 0; i < 100; i++) {
             vm.prank(alice);
@@ -37,13 +44,39 @@ contract StakeAndWinTest is Test {
 
         assertEq(sw.currentWinner(), alice);
 
-        // Winner claims
         vm.prank(alice);
         sw.claimPrize();
 
-        // After claim, round should reset
         assertEq(sw.totalTickets(), 0);
         assertEq(sw.currentWinner(), address(0));
         assertEq(sw.prizeClaimed(), false);
+    }
+
+    function testForceResetRound() public {
+        address alice = vm.addr(0x1000);
+        vm.deal(alice, 3 ether);
+        for (uint256 i = 0; i < 100; i++) {
+            vm.prank(alice);
+            sw.buyTicket{value: 0.01 ether}();
+        }
+        // winner selected but not claimed yet
+        assertTrue(sw.currentWinner() != address(0));
+        assertFalse(sw.prizeClaimed());
+
+        // cannot force reset before claim
+        vm.prank(owner());
+        sw.forceResetRound();
+
+        // After force reset, state cleared
+        assertEq(sw.currentWinner(), address(0));
+        assertEq(sw.prizeClaimed(), false);
+    }
+
+    function testTicketsRemaining() public {
+        for (uint256 i = 0; i < 50; i++) {
+            vm.prank(address(this));
+            sw.buyTicket{value: 0.01 ether}();
+        }
+        assertEq(sw.ticketsRemaining(), 50);
     }
 }
