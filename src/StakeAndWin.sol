@@ -10,7 +10,6 @@ contract StakeAndWin is Ownable {
     uint256 public totalTickets;
     uint256 public prizePool;
     uint256 public houseCutBps = 1000; // 10%
-    uint256 public lastBlock;
 
     address payable public currentWinner;
     bool public prizeClaimed;
@@ -25,7 +24,9 @@ contract StakeAndWin is Ownable {
     event RoundReset(uint256 newTotalTickets);
     event BatchPurchased(address indexed buyer, uint256 firstTicketId, uint256 count, uint256 totalPaid);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) {
+        _status = _NOT_ENTERED;
+    }
 
     receive() external payable {}
 
@@ -100,7 +101,8 @@ contract StakeAndWin is Ownable {
         prizeClaimed = true;
         uint256 amount = pendingPrize;
         pendingPrize = 0;
-        payable(msg.sender).transfer(amount);
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
         emit PrizeClaimed(ticketCounter, msg.sender, amount);
         _resetRound();
     }
