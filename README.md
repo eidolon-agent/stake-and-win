@@ -38,8 +38,19 @@ forge script script/DeployStakeAndWin.s.sol:DeployStakeAndWin \
 After deployment, update `CONTRACT_ADDRESS` in `frontend/index.html` and redeploy frontend.
 
 **Deployed on Base Sepolia:**
-- Contract: `0x9B70f827D2741542E032B5bBD3b7393E4bB890B6`
-- Basescan: https://sepolia.basescan.org/address/0x9B70f827D2741542E032B5bBD3b7393E4bB890B6
+- Contract: `0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6`
+- Basescan: https://sepolia.basescan.org/address/0x0Fbb6EC9F1C43D22BBDbB4E7b5913a3fb17fC2C6
+
+**Frontend:** Deploy to Vercel with root=`frontend`. Then share URL.
+
+**Features:**
+- Batch ticket purchase (`buyMultiple`) for lower gas
+- Winner claim with safety (reentrancy guard)
+- Auto-reset rounds after claim
+- `ticketsRemaining()` view
+- Owner `forceResetRound` for emergencies
+- Auto-refresh dashboard
+- Winner claim card appears when you are the winner
 
 ## Revenue
 
