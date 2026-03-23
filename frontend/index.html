@@ -80,19 +80,39 @@
         this.currentWinner='0x0000000000000000000000000000000000000000';
         this.ticketsRemaining=100;
         this.prizeClaimed=false;
-        this.houseCutBps=1000; // default 10%
+        this.houseCutBps=1000;
         this.paused=false;
+        this.loadError=null;
       }
       async init() {
         try {
-          document.getElementById('loading').textContent='Connecting wallet…';
-          this.account=await getWalletAddress();
-          const chainId=await window.ethereum.request({method:'eth_chainId'});
-          this.currentChainId=chainId; this.wrongNetwork=(chainId!==BASE_SEPOLIA_CHAIN_ID);
-          document.getElementById('loading').textContent=this.wrongNetwork?'Wrong network':'Loading…';
-          if(!this.wrongNetwork){ await this.loadState(); this.render(); setInterval(()=>{ if(!this.wrongNetwork){ this.loadState().then(()=>this.render()); } }, 30000); }
-          else { this.render(); }
-        } catch(err){ this.renderError(err.message); }
+          document.getElementById('loading').textContent = 'Connecting wallet…';
+          // Timeout for wallet connection
+          const walletPromise = getWalletAddress();
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Wallet connection timeout')), 10000));
+          this.account = await Promise.race([walletPromise, timeoutPromise]);
+          document.getElementById('loading').textContent = 'Checking network…';
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          this.currentChainId = chainId;
+          this.wrongNetwork = (chainId !== BASE_SEPOLIA_CHAIN_ID);
+          document.getElementById('loading').textContent = this.wrongNetwork ? 'Wrong network' : 'Loading data…';
+          if (!this.wrongNetwork) {
+            try {
+              await this.loadState();
+            } catch (e) {
+              this.loadError = 'Failed to load contract state: ' + e.message;
+            }
+          }
+          this.render();
+          // Auto-refresh every 30s
+          setInterval(() => {
+            if (!this.wrongNetwork) {
+              this.loadState().catch(e => { this.loadError = 'Refresh failed: ' + e.message; this.render(); });
+            }
+          }, 30000);
+        } catch (err) {
+          this.renderError('Initialization failed: ' + err.message);
+        }
       }
       async loadState() {
         const data1 = await rpcCall('eth_call',[{to:CONTRACT_ADDRESS,data:'0x18160ddd'},'latest']); // totalTickets()
@@ -191,6 +211,15 @@
                 <button class="btn primary" onclick="app.switchNetwork()">Switch to Base Sepolia</button>
               </div>
             </div>`:''}
+
+            ${this.loadError ? `
+            <div class="container" style="padding:10px 0;">
+              <div class="card" style="border-color:#f87171;">
+                <p style="color:#f87171;margin:0;">${this.loadError}</p>
+                <button class="btn secondary" style="margin-top:8px;" onclick="app.loadState().then(()=>app.render()).catch(e=>{app.loadError='Retry failed: '+e.message;app.render();})">Retry</button>
+              </div>
+            </div>
+            ` : ''}
 
             ${this.paused ? `
             <div class="container" style="padding:10px 0;">
