@@ -5,12 +5,13 @@ A micro‑lottery on Base Sepolia. Users buy 0.01 ETH tickets. When 100 ticket
 ## Contract
 
 - `StakeAndWin.sol` — main lottery logic
-- Reentrancy‑protected
+- Reentrancy‑protected on `buyTicket`, `buyMultiple`, and `claimPrize`
 - Random winner selection using blockhash + timestamp
-- `buyTicket()` pays 0.01 ETH, increments ticket counter and prize pool
-- When `totalTickets >= THRESHOLD` (100), winner is selected
-- Winner calls `claimPrize()` to receive 90% of pool
-- Owner can set fee (`houseCutBps`) and emergency withdraw
+- `buyTicket()` and `buyMultiple(count)` pay 0.01 ETH per ticket
+- When `totalTickets >= THRESHOLD` (100), winner is selected automatically
+- Winner calls `claimPrize()` to receive 90% of pool; round auto‑resets
+- Owner can set fee (`houseCutBps`), emergency withdraw, and `forceResetRound` if needed
+- View `ticketsRemaining()` shows how many tickets left until next draw
 
 ## Frontend
 
